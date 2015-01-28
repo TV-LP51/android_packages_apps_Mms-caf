@@ -33,6 +33,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="vertical"
+	android:background="@*android:color/validus_blue_grey"
         android:gravity="end">
 
         <RelativeLayout

@@ -170,7 +170,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
-                android:background="@*android:color/validus_blue_grey" >
+                android:background="@*android:color/material_blue_grey" >
 
                 <EditText
                     android:textColor="@color/compose_message_text_color"
@@ -249,11 +249,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
-                android:background="@*android:color/validus_blue_grey" >
+                android:background="@*android:color/material_blue_grey" >
 
                 <EditText
                     android:textColor="@android:color/black"
-                    android:background="@*android:color/validus_blue_grey"
+                    android:background="@*android:color/material_blue_grey"
                     android:id="@+id/embedded_text_editor_btnstyle"
                     android:layout_width="match_parent"
                     android:layout_gravity="bottom"

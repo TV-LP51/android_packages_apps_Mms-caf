@@ -69,7 +69,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dip"
-        android:background="@android:color/holo_blue_light"
+        android:background="@*android:color/validus_blue_grey"
         android:paddingBottom="4dp"
         android:paddingTop="4dp" />
 
@@ -81,7 +81,7 @@
         android:layout_weight="1"
         android:fillViewport="true"
         android:minHeight="72dp"
-        android:background="@color/quickmessage_body_dark_bg"
+        android:background="@*android:color/validus_blue_grey"
         android:paddingTop="4dp"
         android:paddingBottom="4dp" >
 
@@ -106,7 +106,7 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/quickmessage_body_dark_bg"
+        android:background="@*android:color/validus_blue_grey"
         android:paddingTop="4dp"
         android:paddingLeft="6dp"
         android:paddingBottom="2dp" >

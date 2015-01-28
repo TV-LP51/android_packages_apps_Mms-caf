@@ -69,7 +69,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dip"
-        android:background="@*android:color/validus_blue_grey"
+        android:background="@*android:color/material_blue_grey"
         android:paddingBottom="4dp"
         android:paddingTop="4dp" />
 
@@ -82,7 +82,7 @@
         android:fillViewport="true"
         android:minHeight="72dp"
         android:paddingTop="4dp"
-        android:background="@*android:color/validus_blue_grey"
+        android:background="@*android:color/material_blue_grey"
         android:paddingBottom="4dp" >
 
         <TextView
@@ -106,7 +106,7 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@*android:color/validus_blue_grey"
+        android:background="@*android:color/material_blue_grey"
         android:paddingTop="4dp"
         android:paddingLeft="6dp"
         android:paddingBottom="2dp" >
