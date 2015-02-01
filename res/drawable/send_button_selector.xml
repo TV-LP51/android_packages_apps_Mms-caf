@@ -18,6 +18,6 @@
         android:autoMirrored="true">
     <item
         android:state_enabled="false"
-        android:drawable="@drawable/ic_send_disabled_holo_light" />
-    <item android:drawable="@drawable/ic_send_holo_light" /> <!-- default -->
+        android:drawable="@drawable/ic_send_disabled_holo_dark" />
+    <item android:drawable="@drawable/ic_send_holo_dark" /> <!-- default -->
 </selector>

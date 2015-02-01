@@ -55,7 +55,7 @@
                 android:textSize="16sp" />
 
             <TextView android:id="@+id/number"
-                android:background="@drawable/listitem_background"
+                android:background="@*android:color/material_blue_grey"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingStart="@dimen/message_item_text_padding_left_right"

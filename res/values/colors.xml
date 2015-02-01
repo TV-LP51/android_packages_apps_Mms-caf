@@ -29,7 +29,7 @@
     <!-- Chat "sent time" text background -->
     <color name="timestamp_color">#bfffffff</color>
 
-    <color name="outgoing_message_bg">#000000</color>
+    <color name="outgoing_message_bg">#ff384248</color>
     <color name="incoming_message_bg_default">#009688</color>
     <color name="selected_list_item_bg">#ffeeeeee</color>
 
