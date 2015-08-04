@@ -303,7 +303,7 @@ public class ComposeMessageActivity extends Activity
 
     // To reduce janky interaction when message history + draft loads and keyboard opening
     // query the messages + draft after the keyboard opens. This controls that behavior.
-    private static final boolean DEFER_LOADING_MESSAGES_AND_DRAFT = true;
+    private static final boolean DEFER_LOADING_MESSAGES_AND_DRAFT = false;
 
     // The max amount of delay before we force load messages and draft.
     // 500ms is determined empirically. We want keyboard to have a chance to be shown before
@@ -413,7 +413,7 @@ public class ComposeMessageActivity extends Activity
 
     private AsyncDialog mAsyncDialog;   // Used for background tasks.
 
-    private String mDebugRecipients;
+    private ContactList mRecipients;
 
     private boolean mEnableEmoticons;
 
@@ -502,6 +502,8 @@ public class ComposeMessageActivity extends Activity
     private UnicodeFilter mUnicodeFilter = null;
 
     private AddNumbersTask mAddNumbersTask;
+
+    boolean isNotProcessingNumbers = true;
 
     @SuppressWarnings("unused")
     public static void log(String logMsg) {
@@ -985,8 +987,7 @@ public class ComposeMessageActivity extends Activity
         } else {
             // The recipients editor is still open. Make sure we use what's showing there
             // as the destination.
-            ContactList contacts = mRecipientsEditor.constructContactsFromInput(false);
-            mDebugRecipients = contacts.serialize();
+            mRecipients = mRecipientsEditor.constructContactsFromInput(false);
             sendMsimMessage(true, subIds[0]);
         }
     }
@@ -1015,8 +1016,7 @@ public class ComposeMessageActivity extends Activity
         } else {
             // The recipients editor is still open. Make sure we use what's showing there
             // as the destination.
-            ContactList contacts = mRecipientsEditor.constructContactsFromInput(false);
-            mDebugRecipients = contacts.serialize();
+            mRecipients = mRecipientsEditor.constructContactsFromInput(false);
             if ((TelephonyManager.getDefault().getPhoneCount()) > 1) {
                 sendMsimMessage(true);
             } else {
@@ -1081,27 +1081,29 @@ public class ComposeMessageActivity extends Activity
                 return;
             }
 
-            mWorkingMessage.setWorkingRecipients(mRecipientsEditor.getNumbers());
-            mWorkingMessage.setHasEmail(mRecipientsEditor.containsEmail(), true);
+            if (isNotProcessingNumbers) {
+                mWorkingMessage.setWorkingRecipients(mRecipientsEditor.getNumbers());
+                mWorkingMessage.setHasEmail(mRecipientsEditor.containsEmail(), true);
 
-            checkForTooManyRecipients();
-            // If pick recipients from Contacts,
-            // then only update title once when process finished
-            if (mIsProcessPickedRecipients) {
-                 return;
+                checkForTooManyRecipients();
+                // If pick recipients from Contacts,
+                // then only update title once when process finished
+                if (mIsProcessPickedRecipients) {
+                     return;
+                }
+
+                if (mRecipientsPickList != null) {
+                    // Update UI with mRecipientsPickList, which is picked from
+                    // People.
+                    updateTitle(mRecipientsPickList);
+                    mRecipientsPickList = null;
+                } else {
+                    updateTitleForRecipientsChange(s);
+                }
+
+                // If we have gone to zero recipients, disable send button.
+                updateSendButtonState();
             }
-
-            if (mRecipientsPickList != null) {
-                // Update UI with mRecipientsPickList, which is picked from
-                // People.
-                updateTitle(mRecipientsPickList);
-                mRecipientsPickList = null;
-            } else {
-                updateTitleForRecipientsChange(s);
-            }
-
-            // If we have gone to zero recipients, disable send button.
-            updateSendButtonState();
         }
     };
 
@@ -1166,7 +1168,7 @@ public class ComposeMessageActivity extends Activity
                     menu.add(0, MENU_VIEW_CONTACT, 0, R.string.menu_view_contact)
                             .setOnMenuItemClickListener(l);
                 } else if (canAddToContacts(c)){
-                    menu.add(0, MENU_ADD_TO_CONTACTS, 0, R.string.menu_add_to_contacts)
+                    menu.add(0, MENU_ADD_TO_CONTACTS, 0, R.string.menu_add_to_contacts_cm)
                             .setOnMenuItemClickListener(l);
                 }
             }
@@ -1827,14 +1829,21 @@ public class ComposeMessageActivity extends Activity
                 }
                 break;
             }
-            default: {
+            case 2:
+            case 3:
                 // Handle multiple recipients
                 title = list.formatNames(", ");
-                subTitle = getResources().getQuantityString(R.plurals.recipient_count, cnt, cnt);
+                subTitle = getResources().getQuantityString(R.plurals.recipient_count, cnt,
+                        cnt);
                 break;
+            default: {
+                // Handle many recipients
+                title = getResources().getQuantityString(R.plurals.recipient_count, cnt,
+                        cnt);
+                subTitle = null;
             }
         }
-        mDebugRecipients = list.serialize();
+        mRecipients = list;
 
         if (cnt > 0 && !mAccentColorLoaded && !mLoadingAccentColor) {
             final Contact contact = list.get(0);
@@ -2095,6 +2104,12 @@ public class ComposeMessageActivity extends Activity
 
         if (show) {
             mSubjectTextEditor.addTextChangedListener(mSubjectEditorWatcher);
+
+            // Ensure the "to" label is hidden when Subject editor shows
+            TextView toLabel = (TextView) findViewById(R.id.to_label);
+            if (toLabel != null) {
+                toLabel.setVisibility(View.GONE);
+            }
         } else {
             mSubjectTextEditor.removeTextChangedListener(mSubjectEditorWatcher);
         }
@@ -2180,8 +2195,6 @@ public class ComposeMessageActivity extends Activity
         if (Log.isLoggable(LogTag.APP, Log.VERBOSE)) {
             log("update title, mConversation=" + mConversation.toString());
         }
-
-        updateTitle(mConversation.getRecipients());
 
         if (isForwardedMessage && isRecipientsEditorVisible()) {
             // The user is forwarding the message to someone. Put the focus on the
@@ -2388,7 +2401,7 @@ public class ComposeMessageActivity extends Activity
         mMessagesAndDraftLoaded = false;
 
         CharSequence text = mWorkingMessage.getText();
-        if (text != null) {
+        if (!TextUtils.isEmpty(text)) {
             mTextEditor.setTextKeepState(text);
         }
         if (!DEFER_LOADING_MESSAGES_AND_DRAFT) {
@@ -2414,8 +2427,6 @@ public class ComposeMessageActivity extends Activity
         if (Log.isLoggable(LogTag.APP, Log.VERBOSE)) {
             log("update title, mConversation=" + mConversation.toString());
         }
-
-        updateTitle(mConversation.getRecipients());
 
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
@@ -3070,7 +3081,7 @@ public class ComposeMessageActivity extends Activity
     }
 
     private void buildAddAddressToContactMenuItem(Menu menu) {
-        // bug #7087793: for group of recipients, remove "Add to People" action. Rely on
+        // bug #7087793: for group of recipients, remove "Add to Contacts" action. Rely on
         // individually creating contacts for unknown phone numbers by touching the individual
         // sender's avatars, one at a time
         ContactList contacts = getRecipients();
@@ -3083,7 +3094,7 @@ public class ComposeMessageActivity extends Activity
         Contact c = contacts.get(0);
         if (!c.existsInDatabase() && canAddToContacts(c)) {
             Intent intent = ConversationList.createAddContactIntent(c.getNumber());
-            menu.add(0, MENU_ADD_ADDRESS_TO_CONTACTS, 0, R.string.menu_add_to_contacts)
+            menu.add(0, MENU_ADD_ADDRESS_TO_CONTACTS, 0, R.string.menu_add_to_contacts_cm)
                 .setIcon(android.R.drawable.ic_menu_add)
                 .setIntent(intent);
         }
@@ -3658,6 +3669,7 @@ public class ComposeMessageActivity extends Activity
                 break;
 
             case REQUEST_CODE_ADD_RECIPIENTS:
+                mShouldLoadDraft = true;
                 mAddNumbersTask = new AddNumbersTask();
                 mAddNumbersTask.execute(
                         data.getStringArrayListExtra(SelectRecipientsList.EXTRA_RECIPIENTS));
@@ -3712,7 +3724,9 @@ public class ComposeMessageActivity extends Activity
             super.onPreExecute();
             mPD = new ProgressDialog(ComposeMessageActivity.this);
             mPD.setMessage(getString(R.string.adding_selected_recipients_dialog_text));
+            mPD.setCancelable(false);
             mPD.show();
+            isNotProcessingNumbers = false;
         }
 
         @Override
@@ -3724,13 +3738,6 @@ public class ComposeMessageActivity extends Activity
             ArrayList<String> numbers = params[0];
 
             ContactList list = ContactList.getByNumbers(numbers, true);
-            ContactList existing = mRecipientsEditor.constructContactsFromInput(true);
-            for (Contact contact : existing) {
-                if (!contact.existsInDatabase()) {
-                    list.add(contact);
-                }
-            }
-
             mRecipientsEditor.populate(list);
             return null;
         }
@@ -3741,6 +3748,7 @@ public class ComposeMessageActivity extends Activity
             if (mPD != null && mPD.isShowing()) {
                 mPD.dismiss();
             }
+            isNotProcessingNumbers = true;
         }
     }
 
@@ -3934,6 +3942,12 @@ public class ComposeMessageActivity extends Activity
                     title = res.getString(R.string.illegal_message_or_increase_size);
                     message = res.getString(R.string.failed_to_add_media, mediaType);
                     break;
+                case WorkingMessage.FAILED_TO_QUERY_CONTACT:
+                    title = res.getString(R.string.attach_add_contact_as_vcard);
+                    message = res.getString(R.string.failed_to_add_media, title);
+                    Toast.makeText(ComposeMessageActivity.this, message, Toast.LENGTH_SHORT).show();
+                    deleteLastMms();
+                    return;
                 default:
                     throw new IllegalArgumentException("unknown error " + error);
                 }
@@ -4166,13 +4180,12 @@ public class ComposeMessageActivity extends Activity
         CharSequence text = mWorkingMessage.getText();
 
         // TextView.setTextKeepState() doesn't like null input.
-        if (text != null && mIsSmsEnabled) {
+        // Initalized with "", so setting anything 0 length is pointless
+        if (!TextUtils.isEmpty(text) && mIsSmsEnabled) {
             mTextEditor.setTextKeepState(text);
 
             // Set the edit caret to the end of the text.
             mTextEditor.setSelection(mTextEditor.length());
-        } else {
-            mTextEditor.setText("");
         }
         onKeyboardStateChanged();
     }
@@ -4564,10 +4577,11 @@ public class ComposeMessageActivity extends Activity
      * Load the draft
      *
      * If mWorkingMessage has content in memory that's worth saving, return false.
+     * If mShouldLoadDraft is true, force the previous draft to load no matter what.
      * Otherwise, call the async operation to load draft and return true.
      */
     private boolean loadDraft() {
-        if (mWorkingMessage.isWorthSaving()) {
+        if (mWorkingMessage.isWorthSaving() && !mShouldLoadDraft) {
             Log.w(TAG, "CMA.loadDraft: called with non-empty working message, bail");
             return false;
         }
@@ -4593,6 +4607,14 @@ public class ComposeMessageActivity extends Activity
         // WorkingMessage.loadDraft() can return a new WorkingMessage object that doesn't
         // have its conversation set. Make sure it is set.
         mWorkingMessage.setConversation(mConversation);
+
+        // WorkingMessage.loadDraft() can return a new WorkingMessage object that does not
+        // have the logical mText. This happens when we have gone to select contacts to send
+        // A message to and have loaded the previous draft upon our return in instances where the
+        // user filled out a text message body before filling out any recipients.
+        if (!mWorkingMessage.getText().equals(mTextEditor.getText())) {
+            mWorkingMessage.setText(mTextEditor.getText());
+        }
 
         return true;
     }
@@ -4714,15 +4736,17 @@ public class ComposeMessageActivity extends Activity
             }
         }
 
+        String mCurrentRecipients = mRecipients.serialize();
+
         if (!mSendingMessage) {
             if (LogTag.SEVERE_WARNING) {
                 String sendingRecipients = mConversation.getRecipients().serialize();
-                if (!sendingRecipients.equals(mDebugRecipients)) {
+                if (DEBUG && !sendingRecipients.equals(mCurrentRecipients)) {
                     String workingRecipients = mWorkingMessage.getWorkingRecipients();
-                    if (!mDebugRecipients.equals(workingRecipients)) {
+                    if (!mCurrentRecipients.equals(workingRecipients)) {
                         LogTag.warnPossibleRecipientMismatch("ComposeMessageActivity.sendMessage" +
                                 " recipients in window: \"" +
-                                mDebugRecipients + "\" differ from recipients from conv: \"" +
+                                mCurrentRecipients + "\" differ from recipients from conv: \"" +
                                 sendingRecipients + "\" and working recipients: " +
                                 workingRecipients, this);
                     }
@@ -4741,7 +4765,7 @@ public class ComposeMessageActivity extends Activity
                 // If resend sms recipient is more than one, use mResendSmsRecipient
                 mWorkingMessage.send(mResendSmsRecipient);
             } else {
-                mWorkingMessage.send(mDebugRecipients);
+                mWorkingMessage.send(mCurrentRecipients);
             }
 
             mSentMessage = true;
@@ -4934,7 +4958,6 @@ public class ComposeMessageActivity extends Activity
                 }
             }
         }
-        addRecipientsListeners();
         updateThreadIdIfRunning();
 
         mSendDiscreetMode = intent.getBooleanExtra(KEY_EXIT_ON_SENT, false);
@@ -5432,14 +5455,17 @@ public class ComposeMessageActivity extends Activity
                     log("[CMA] onUpdate contact updated: " + updated);
                     log("[CMA] onUpdate recipients: " + recipients);
                 }
-                updateTitle(recipients);
+                if (recipients.size() > 0) {
+                    updateTitle(recipients);
+                }
 
                 // The contact information for one (or more) of the recipients has changed.
                 // Rebuild the message list so each MessageItem will get the last contact info.
                 ComposeMessageActivity.this.mMsgListAdapter.notifyDataSetChanged();
 
                 if (mRecipientsEditor != null && (mAddNumbersTask == null ||
-                        mAddNumbersTask.getStatus() != AsyncTask.Status.RUNNING)) {
+                        mAddNumbersTask.getStatus() != AsyncTask.Status.RUNNING) && updated
+                        .getPersonId() != 0) {
                     mRecipientsEditor.populate(recipients);
                 }
             }
@@ -5801,10 +5827,8 @@ public class ComposeMessageActivity extends Activity
             String body = c.getString(COLUMN_SMS_BODY);
             Intent shareIntent = getShareMessageIntent(body);
             Context ctx = getContext();
-            Intent chooserIntent =
-                    IntentUtils.createFilteredChooser(
-                            ctx, ctx.getString(R.string.message_share_intent_title),
-                            shareIntent, ctx.getPackageName());
+            Intent chooserIntent = Intent.createChooser(shareIntent,
+                    ctx.getString(R.string.message_share_intent_title));
             try {
                 startActivity(chooserIntent);
             } catch (ActivityNotFoundException e) {
@@ -5840,11 +5864,15 @@ public class ComposeMessageActivity extends Activity
                 Cursor c = (Cursor) getListView().getAdapter().getItem(pos);
                 String type = c.getString(COLUMN_MSG_TYPE);
                 if (type.equals("mms")) {
-                    sBuilder.append(mMsgListAdapter.getCachedBodyForPosition(pos));
+                    CharSequence value = mMsgListAdapter.getCachedBodyForPosition(pos);
+                    if(!TextUtils.isEmpty(value)) {
+                        sBuilder.append(value);
+                        sBuilder.append(LINE_BREAK);
+                    }
                 } else {
                     sBuilder.append(c.getString(COLUMN_SMS_BODY));
+                    sBuilder.append(LINE_BREAK);
                 }
-                sBuilder.append(LINE_BREAK);
             }
             if (!TextUtils.isEmpty(sBuilder.toString())) {
                 copyToClipboard(sBuilder.toString());
@@ -6234,4 +6262,27 @@ public class ComposeMessageActivity extends Activity
         }
     };
 
+    private void deleteLastMms() {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                // delete the last failed mms
+                Cursor cursor =
+                        (Cursor) mMsgListAdapter.getItem(mMsgListAdapter.getCount() - 1);
+                if (cursor != null) {
+                    long msgId = cursor.getLong(COLUMN_ID);
+                    cursor.close();
+                    Uri uri = ContentUris.withAppendedId(Mms.CONTENT_URI, msgId);
+                    try {
+                        SqliteWrapper.delete(ComposeMessageActivity.this,
+                                mContentResolver, uri, null, null);
+                    } catch (SQLiteException e) {
+                        Log.e(TAG, "Unable to delete unsent vcard mms", e);
+                    }
+                }
+            }
+        };
+        Thread t = new Thread(r);
+        t.run();
+    }
 }

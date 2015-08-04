@@ -55,9 +55,9 @@
     <string name="pref_extra_settings">Extra settings</string>
 
     <!-- Blacklist preferences -->
-    <string name="blacklist_title">Blacklist</string>
+    <string name="blacklist_title">Blocked caller list</string>
     <string name="blacklist_summary_disabled">Disabled</string>
-    <string name="blacklist_summary">Incoming messages from phone numbers in the blacklist will be blocked</string>
+    <string name="blacklist_summary">You will not receive incoming calls or messages from phone numbers on the blocked caller list</string>
 
     <!-- Blacklist notifications -->
     <string name="blacklist_notification">Blocked a message from %s</string>
@@ -68,7 +68,7 @@
     <string name="unblock_number">Unblock</string>
 
     <!-- Blacklist management -->
-    <string name="add_to_blacklist">Add to blacklist</string>
+    <string name="add_to_blacklist">Add to blocked caller list</string>
     <string name="add_to_blacklist_message">Future messages from %s will be blocked</string>
 
     <!-- Generic blacklist handling -->
@@ -87,6 +87,7 @@
     <!-- Context menu item on a message for marking all threads as unread / read -->
     <string name="menu_all_as_unread">Mark all as unread</string>
     <string name="menu_all_as_read">Mark all as read</string>
+    <string name="menu_add_to_contacts_cm">Add to Contacts</string>
     <!-- Confirm Mark as unread / read -->
     <string name="confirm_mark_unread_dialog_title">Mark as unread?</string>
     <string name="confirm_mark_unread_conversation">The conversation will be marked as unread.</string>

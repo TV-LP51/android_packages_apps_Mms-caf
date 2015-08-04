@@ -41,16 +41,16 @@
   <string name="send_delay_30seconds">30 secondes</string>
   <string name="sent_countdown">Décompte avant l\'envoi</string>
   <string name="pref_extra_settings">Paramètres supplémentaires</string>
-  <string name="blacklist_title">Liste noire</string>
+  <string name="blacklist_title">Liste des appelants bloqués</string>
   <string name="blacklist_summary_disabled">Désactivé</string>
-  <string name="blacklist_summary">Les messages entrants des numéros de la liste noire seront bloqués</string>
+  <string name="blacklist_summary">Vous ne recevrez pas d’appels ou de messages de numéros présents dans la liste noire</string>
   <string name="blacklist_notification">Message de %s bloqué</string>
   <string name="blacklist_notification_private_number">Message d\'un numéro privé bloqué</string>
   <string name="blacklist_notification_list_private">Privé</string>
   <string name="blacklist_notification_unknown_number">Message d\'un numéro inconnu %s bloqué</string>
   <string name="blacklist_notification_multiple"><xliff:g id="count">%d</xliff:g> messages ont été bloqués</string>
   <string name="unblock_number">Débloquer</string>
-  <string name="add_to_blacklist">Ajouter à la liste noire</string>
+  <string name="add_to_blacklist">Ajouter à la liste des appelants bloqués</string>
   <string name="add_to_blacklist_message">Les futurs messages de %s seront bloqués</string>
   <string name="alert_dialog_yes">Oui</string>
   <string name="alert_dialog_no">Non</string>
@@ -62,6 +62,7 @@
   <string name="menu_as_read">Marquer comme lu</string>
   <string name="menu_all_as_unread">Marquer tout comme non lus</string>
   <string name="menu_all_as_read">Tout marquer comme lu</string>
+  <string name="menu_add_to_contacts_cm">Ajouter aux contacts</string>
   <string name="confirm_mark_unread_dialog_title">Marquer comme non lu ?</string>
   <string name="confirm_mark_unread_conversation">La conversation sera marquée comme non lue.</string>
   <string name="confirm_mark_read_dialog_title">Marquer comme lu ?</string>
@@ -87,6 +88,7 @@
   <string name="confirm_cancel_downloading">Le téléchargement du MMS sera annulé.</string>
   <string name="send_by_slot1">Envoyer via SIM 1</string>
   <string name="send_by_slot2">Envoyer via SIM 2</string>
+  <string name="select_phone_account_title">Envoyer avec</string>
   <string name="media_size_limit">Taille maximale du message atteinte, impossible d\'envoyer le message.</string>
   <string name="illegal_message_or_increase_size">Taille de message incorrecte.</string>
   <string name="discard_message_reason_some_invalid">Votre message sera annulé car certains destinataires sont incorrects.</string>
@@ -165,6 +167,7 @@
   <string name="menu_reply">Répondre</string>
   <string name="slot1">SIM 1</string>
   <string name="slot2">SIM 2</string>
+  <string name="sim_spinner_active_item_postfix">SIM %d</string>
   <string name="cannot_play">Ne peut pas présenter le diaporama.</string>
   <string name="confirm_delete_selected_messages">Les messages sélectionnés seront supprimés.</string>
   <string name="send_failure">Impossible d\'envoyer le message.</string>
@@ -254,4 +257,7 @@
   <string name="pref_summary_mms_use_sent_timestamp">Afficher la date d\'envoi au lieu de la date de réception</string>
   <string name="pref_title_mms_auto_enable_data">Activation auto des données mobiles</string>
   <string name="pref_summary_mms_auto_enable_data">Activer automatiquement les données mobiles pour les messages MMS</string>
+  <string name="adding_selected_recipients_dialog_text">Ajout de contacts\u2026</string>
+  <string name="pref_title_mms_smart_dialer">Appel intelligent</string>
+  <string name="pref_summary_mms_smart_dialer">Appelle automatiquement le contact en déplaçant votre appareil à votre oreille</string>
 </resources>
